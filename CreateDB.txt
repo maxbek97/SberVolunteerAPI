@@ -1,0 +1,36 @@
+﻿CREATE DATABASE SberVolunteer
+    DEFAULT CHARACTER SET = 'utf8mb4';
+
+use SberVolunteer;
+
+CREATE TABLE `users` (
+    `Id_user` int UNSIGNED NOT NULL PRIMARY KEY,
+    `user_login` VARCHAR(255) NOT NULL UNIQUE,
+    `password` VARCHAR(64) NOT NULL,
+    `user_role` ENUM('admin', 'organiser', 'volunteer') NOT NULL,
+    `user_name` VARCHAR(255) NOT NULL,
+    `user_surname` VARCHAR(255) Not NULL,
+    `user_middlename` VARCHAR(255) NOT NULL,
+    `volunteers_hours` int UNSIGNED NOT NULL
+)
+
+CREATE TABLE `events` (
+    `Id_events` int unsigned NOT NULL PRIMARY KEY,
+    `event_title` VARCHAR(300) NOT NULL UNIQUE,
+    `event_description` TEXT NOT NULL,
+    `datetime_start` DATETIME NOT NULL,
+    `datetime_end` DATETIME NOT NULL,
+    `creationDate` DATE NOT NULL,
+    `creator_id` int UNSIGNED NOT NULL,
+    FOREIGN KEY (`creator_id`) REFERENCES `users` (`Id_user`),
+    `event_state` ENUM('created', 'pending', 'rejected', 'closed')
+)
+
+CREATE TABLE `events_to_volunteers` (
+    `Id_record` int UNSIGNED NOT NULL PRIMARY KEY,
+    `Id_event` int unsigned NOT NULL,
+    FOREIGN KEY (`Id_event`) REFERENCES `events` (`Id_events`),
+    `Id_volunteer` int UNSIGNED NOT NULL,
+    FOREIGN KEY (`Id_volunteer`) REFERENCES `users` (`Id_user`),
+    `volunteer_status` ENUM('came', 'absent') NOT NULL
+)
