@@ -13,7 +13,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
     {
         var (success, message) = await _authService.RegisterAsync(dto);
 
@@ -21,5 +21,28 @@ public class AuthController : ControllerBase
             return BadRequest(new { message });
 
         return Ok(new { message });
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+    {
+        var token = await _authService.LoginAsync(dto);
+        var result = await _authService.LoginAsync(dto);
+
+        if (!result.Success)
+        {
+            return Unauthorized(new
+            {
+                success = false,
+                message = result.Message
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            token = result.Token,
+            message = result.Message
+        });
     }
 }

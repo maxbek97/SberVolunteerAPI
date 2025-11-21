@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SberVolunteerAPI.Models;
+using SberVolunteerAPI.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddDbContext<SberVolunteerContext>(options => options.UseMySql(
         )
 );
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<JWTService>();
+builder.Services.Configure<AuthSettings>(
+    builder.Configuration.GetSection("AuthSettings"));
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
