@@ -34,6 +34,50 @@ namespace SberVolunteerAPI.Services
                 })
                 .ToListAsync();
         }
+        public async Task<List<EventDTO>> GetMyEventsAsync(uint userId)
+        {
+            var now = DateTime.Now;
+
+            return await _db.EventsToVolunteers
+                .Where(v =>
+                    v.IdVolunteer == userId &&
+                    v.RequestStatus == "approved" &&
+                    v.IdEventNavigation.DatetimeStart > now
+        )
+                .Select(x => new EventDTO
+                {
+                    Id = x.IdEventNavigation.IdEvent,
+                    EventTitle = x.IdEventNavigation.EventTitle,
+                    EventDescription = x.IdEventNavigation.EventDescription,
+                    DatetimeStart = x.IdEventNavigation.DatetimeStart,
+                    DatetimeEnd = x.IdEventNavigation.DatetimeEnd,
+                    CreationDate = x.IdEventNavigation.CreationDate
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<EventDTO>> GetMyClosedEventsAsync(uint userId)
+        {
+            var now = DateTime.Now;
+
+            return await _db.EventsToVolunteers
+                .Where(v =>
+                    v.IdVolunteer == userId &&
+                    (v.VisitStatus == "came" || v.VisitStatus == "absent") &&
+                    v.IdEventNavigation.EventState == "closed"
+        )
+                .Select(x => new EventDTO
+                {
+                    Id = x.IdEventNavigation.IdEvent,
+                    EventTitle = x.IdEventNavigation.EventTitle,
+                    EventDescription = x.IdEventNavigation.EventDescription,
+                    DatetimeStart = x.IdEventNavigation.DatetimeStart,
+                    DatetimeEnd = x.IdEventNavigation.DatetimeEnd,
+                    CreationDate = x.IdEventNavigation.CreationDate
+                })
+                .ToListAsync();
+        }
+
         public async Task<(bool Success, string Message)> SubscribeToEventAsync(uint eventId, uint userId)
         {
             var ev = await _db.Events

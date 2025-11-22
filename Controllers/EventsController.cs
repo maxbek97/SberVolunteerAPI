@@ -50,5 +50,32 @@ namespace SberVolunteerAPI.Controllers
             return Ok(new { message = "Subscription request created successfully" });
         }
 
+        [HttpGet("myEvents")]
+        public async Task<IActionResult> GetMyEvents()
+        {
+            var userIdString = User.FindFirst("userId")?.Value;
+            if (userIdString == null)
+                return Unauthorized("Invalid token");
+
+            uint userId = uint.Parse(userIdString);
+
+            var events = await _service.GetMyEventsAsync(userId);
+
+            return Ok(events);
+        }
+
+        [HttpGet("ClosedEvents")]
+        public async Task<IActionResult> GetMyClosedEvents()
+        {
+            var userIdString = User.FindFirst("userId")?.Value;
+            if (userIdString == null)
+                return Unauthorized("Invalid token");
+
+            uint userId = uint.Parse(userIdString);
+
+            var events = await _service.GetMyClosedEventsAsync(userId);
+
+            return Ok(events);
+        }
     }
 }
