@@ -21,7 +21,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JWTService>();
 builder.Services.Configure<AuthSettings>(
     builder.Configuration.GetSection("AuthSettings"));
-builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<VolunteerService>();
+builder.Services.AddScoped<OrganiserService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();

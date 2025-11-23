@@ -5,11 +5,11 @@ using SberVolunteerAPI.Models.DTO;
 
 namespace SberVolunteerAPI.Services
 {
-    public class EventService
+    public class VolunteerService
     {
         private readonly SberVolunteerContext _db;
 
-        public EventService(SberVolunteerContext db)
+        public VolunteerService(SberVolunteerContext db)
         {
             _db = db;
         }
