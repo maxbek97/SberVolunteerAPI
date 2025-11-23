@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SberVolunteerAPI.Models.DTO;
+using SberVolunteerAPI.Services;
 
 [ApiController]
 [Route("auth")]
@@ -26,7 +27,6 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO dto)
     {
-        var token = await _authService.LoginAsync(dto);
         var result = await _authService.LoginAsync(dto);
 
         if (!result.Success)
@@ -44,5 +44,24 @@ public class AuthController : ControllerBase
             token = result.Token,
             message = result.Message
         });
+
     }
+
+    [HttpGet("GetUserInfo")]
+    public async Task<IActionResult> GetVolunteerInfo()
+    {
+        var userIdString = User.FindFirst("userId")?.Value;
+        if (userIdString == null)
+            return Unauthorized("Invalid token");
+
+        uint userId = uint.Parse(userIdString);
+
+        var info = await _authService.GetVolunteerInfoAsync(userId);
+
+        if (info == null)
+            return NotFound("User not found.");
+
+        return Ok(info);
+    }
+
 }

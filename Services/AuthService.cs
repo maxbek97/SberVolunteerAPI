@@ -60,4 +60,21 @@ public class AuthService
         }
             
     }
+    public async Task<UserDTO> GetVolunteerInfoAsync(uint userId)
+    {
+        return await _db.Users
+            .Where(u => u.IdUser == userId)
+            .Select(u => new UserDTO
+            {
+                IdUser = u.IdUser,
+                UserLogin = u.UserLogin,
+                UserRole = u.UserRole,
+                UserName = u.UserName,
+                UserSurname = u.UserSurname,
+                UserMiddlename = u.UserMiddlename,
+                VolunteersHours = u.VolunteersHours
+            })
+            .FirstOrDefaultAsync();
+    }
+
 }

@@ -99,6 +99,70 @@ namespace SberVolunteerAPI.Services
             return true;
         }
 
+        public async Task<List<ClosingEventDTO>> GetPastEventsAsync(uint organiserId)
+        {
+            var now = DateTime.Now;
+
+            return await _db.Events
+                .Where(e =>
+                    e.CreatorId == organiserId &&
+                    e.DatetimeEnd < now &&
+                    e.EventState == "active")
+                .Select(e => new ClosingEventDTO
+                {
+                    IdEvent = e.IdEvent,
+                    EventTitle = e.EventTitle,
+                    DatetimeStart = e.DatetimeStart,
+                    DatetimeEnd = e.DatetimeEnd,
+
+                    Participants = e.EventsToVolunteers
+                        .Where(v => v.RequestStatus == "approved")
+                        .Select(v => new ParticipantDTO
+                        {
+                            IdUser = v.IdVolunteer,
+                            FullName = v.IdVolunteerNavigation.UserSurname + " " +
+                                       v.IdVolunteerNavigation.UserName + " " +
+                                       v.IdVolunteerNavigation.UserMiddlename
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+        }
+        public async Task<bool> CompleteEventAsync(uint organiserId, UserVisitStatusDTO dto)
+        {
+            var ev = await _db.Events
+                .Include(e => e.EventsToVolunteers)
+                .ThenInclude(v => v.IdVolunteerNavigation)
+                .FirstOrDefaultAsync(e =>
+                    e.IdEvent == dto.EventId &&
+                    e.CreatorId == organiserId);
+
+            if (ev == null)
+                return false;
+
+            var hours = (uint)(ev.DatetimeEnd - ev.DatetimeStart).TotalHours;
+            if (hours < 0) hours = 0;
+
+            foreach (var record in ev.EventsToVolunteers)
+            {
+                if (!dto.Attendance.TryGetValue(record.IdVolunteer, out bool came))
+                    came = false;
+
+                record.VisitStatus = came ? "came" : "absent";
+
+                if (came)
+                {
+                    record.IdVolunteerNavigation.VolunteersHours += hours;
+                }
+            }
+
+            ev.EventState = "closed";
+
+            await _db.SaveChangesAsync();
+
+            return true;
+        }
+
 
     }
 

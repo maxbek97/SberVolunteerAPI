@@ -7,18 +7,16 @@ using SberVolunteerAPI.Services;
 
 namespace SberVolunteerAPI.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "volunteer")]
     [Route("api/[controller]")]
     [ApiController]
-    public class EventsController : ControllerBase
+    public class VolunteersEventsController : ControllerBase
     {
         private readonly VolunteerService _volunteerService;
-        private readonly OrganiserService _organiserService;
 
-        public EventsController(VolunteerService volunteer_service, OrganiserService organiser_service)
+        public VolunteersEventsController(VolunteerService volunteer_service)
         {
             _volunteerService = volunteer_service;
-            _organiserService = organiser_service;
         }
 
         [HttpGet("volunteer/futureEvents")]
@@ -81,51 +79,5 @@ namespace SberVolunteerAPI.Controllers
 
             return Ok(events);
         }
-
-        [HttpGet("organiser/futureEvents")]
-        public async Task<IActionResult> GetUpcomingOrganiserEvents()
-        {
-            var userIdString = User.FindFirst("userId")?.Value;
-            if (userIdString == null)
-                return Unauthorized("Invalid token");
-
-            uint organizerId = uint.Parse(userIdString);
-
-            var events = await _organiserService.GetOrganizerUpcomingEventsAsync(organizerId);
-            return Ok(events);
-        }
-
-        [HttpPost("organiser/create")]
-        public async Task<IActionResult> CreateEvent([FromBody] CreationEventDTO req)
-        {
-            var userIdString = User.FindFirst("userId")?.Value;
-            if (userIdString == null)
-                return Unauthorized("Invalid token");
-
-            uint organizerId = uint.Parse(userIdString);
-
-            var created = await _organiserService.CreateEventAsync(organizerId, req);
-            return Ok(created);
-        }
-
-        [HttpPost("organiser/volunteers_request/update")]
-        public async Task<IActionResult> UpdateStatus([FromBody] UserRequestStatusDTO dto)
-        {
-            var userIdString = User.FindFirst("userId")?.Value;
-            if (userIdString == null)
-                return Unauthorized("Invalid token");
-
-            uint organizerId = uint.Parse(userIdString);
-
-            if (dto.Status != "approved" && dto.Status != "rejected")
-                return BadRequest("Invalid status");
-
-            var ok = await _organiserService.UpdateVolunteerRequestStatusAsync(organizerId, dto);
-            if (!ok)
-                return NotFound("Record not found");
-
-            return Ok("Status updated");
-        }
-
     }
 }

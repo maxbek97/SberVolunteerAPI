@@ -16,7 +16,8 @@ namespace SberVolunteerAPI.Services
             var claims = new List<Claim>
             {
                 new Claim("userLogin", user.UserLogin),
-                new Claim("userId", user.IdUser.ToString())
+                new Claim("userId", user.IdUser.ToString()),
+                new Claim(ClaimTypes.Role, user.UserRole)
             };
             var jwtToken = new JwtSecurityToken(
                 expires: DateTime.UtcNow.Add(options.Value.Expires),
