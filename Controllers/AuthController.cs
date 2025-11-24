@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new
             {
                 success = false,
-                message = result.Message
+                message = "Unauthorized"
             });
         }
 
@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
         {
             success = true,
             token = result.Token,
-            message = result.Message
+            message = result.UserRole
         });
 
     }
