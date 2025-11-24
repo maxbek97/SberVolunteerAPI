@@ -42,7 +42,7 @@ public class AuthService
 
         return (true, "Registration successful");
     }
-    public async Task<(bool Success, string Token, string Message)> LoginAsync(LoginDTO dto)
+    public async Task<(bool Success, string Token, string UserRole)> LoginAsync(LoginDTO dto)
     {
         var user = await _db.Users.FirstOrDefaultAsync(x => x.UserLogin == dto.UserLogin);
         if (user == null)
@@ -52,7 +52,7 @@ public class AuthService
         if (result == PasswordVerificationResult.Success)
         {
             var token = _jwtService.GenerateToken(user);
-            return (true, token, "Success");
+            return (true, token, user.UserRole.ToString());
         }
         else
         {
