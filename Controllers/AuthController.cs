@@ -47,7 +47,7 @@ public class AuthController : ControllerBase
 
     }
 
-    [HttpGet("GetUserInfo")]
+    [HttpGet("user-info")]
     public async Task<IActionResult> GetVolunteerInfo()
     {
         var userIdString = User.FindFirst("userId")?.Value;

@@ -19,7 +19,7 @@ namespace SberVolunteerAPI.Controllers
             _organiserService = organiser_service;
         }
 
-        [HttpGet("futureEvents")]
+        [HttpGet("future-events")]
         public async Task<IActionResult> GetUpcomingOrganiserEvents()
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -32,7 +32,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(events);
         }
 
-        [HttpPost("createEvent")]
+        [HttpPost("create-event")]
         public async Task<IActionResult> CreateEvent([FromBody] CreationEventDTO req)
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -45,7 +45,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(new { message = created.Message });
         }
 
-        [HttpPost("UpdateVolunteers_request")]
+        [HttpPost("update-volunteers-request")]
         public async Task<IActionResult> UpdateStatus([FromBody] UserRequestStatusDTO dto)
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -63,7 +63,7 @@ namespace SberVolunteerAPI.Controllers
 
             return Ok("Status updated");
         }
-        [HttpGet("pastEvents")]
+        [HttpGet("past-events")]
         public async Task<IActionResult> GetPastEvents()
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -77,7 +77,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(result);
         }
 
-        [HttpPost("closeEvent")]
+        [HttpPost("complete-event")]
         public async Task<IActionResult> CompleteEvent([FromBody] UserVisitStatusDTO dto)
         {
             uint organiserId = uint.Parse(User.FindFirst("userId")!.Value);

@@ -19,7 +19,7 @@ namespace SberVolunteerAPI.Controllers
             _volunteerService = volunteer_service;
         }
 
-        [HttpGet("volunteer/futureEvents")]
+        [HttpGet("future-events")]
         public async Task<IActionResult> GetAvailableEvents()
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -33,7 +33,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(events);
         }
 
-        [HttpPost("volunteer/subscribe/{eventId}")]
+        [HttpPost("subscribe/{eventId}")]
         public async Task<IActionResult> SubscribeToEvent(uint eventId)
         {
             // Достаём userId из JWT
@@ -52,7 +52,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(new { message = "Subscription request created successfully" });
         }
 
-        [HttpGet("volunteer/myEvents")]
+        [HttpGet("my-events")]
         public async Task<IActionResult> GetMyEvents()
         {
             var userIdString = User.FindFirst("userId")?.Value;
@@ -66,7 +66,7 @@ namespace SberVolunteerAPI.Controllers
             return Ok(events);
         }
 
-        [HttpGet("volunteer/ClosedEvents")]
+        [HttpGet("closed-events")]
         public async Task<IActionResult> GetMyClosedEvents()
         {
             var userIdString = User.FindFirst("userId")?.Value;
