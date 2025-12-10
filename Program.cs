@@ -1,95 +1,67 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using SberVolunteerAPI.Models;
 using SberVolunteerAPI.Services;
-using System;
 using System.Text;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Добавляем appsettings.Local.json (опционально)
+builder.Configuration.AddJsonFile("appsettings_local.json", optional: true);
 
 builder.Services.AddControllers();
 
-var cs = $"Server={Environment.GetEnvironmentVariable("DB_HOST")};" +
-         $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
-         $"Database={Environment.GetEnvironmentVariable("DB_DATABASE")};" +
-         $"User={Environment.GetEnvironmentVariable("DB_USER")};" +
-         $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};";
+// 1) Пытаемся взять строку подключения из переменных окружения (для Docker)
+var dockerConnectionString = Environment.GetEnvironmentVariable("DB_HOST") != null
+    ? $"Server={Environment.GetEnvironmentVariable("DB_HOST")};" +
+      $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
+      $"Database={Environment.GetEnvironmentVariable("DB_DATABASE")};" +
+      $"User={Environment.GetEnvironmentVariable("DB_USER")};" +
+      $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};"
+    : null;
+
+// 2) Если работаем локально → берем строку подключения из appsettings
+var connectionString = dockerConnectionString
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<SberVolunteerContext>(options =>
-    options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JWTService>();
-builder.Services.Configure<AuthSettings>(
-    builder.Configuration.GetSection("AuthSettings"));
-builder.Services.AddScoped<VolunteerService>();
-builder.Services.AddScoped<OrganiserService>();
+builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("AuthSettings"));
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(options =>
 {
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "������� ����� ����: Bearer {token}"
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["AuthSettings:SecretKey"]))
+    };
 });
-
-// JWT auth
-
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["AuthSettings:SecretKey"]))
-        };
-    });
 
 var app = builder.Build();
 
+// Авто-миграции
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SberVolunteerContext>();
     db.Database.Migrate();
 }
 
-// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -97,10 +69,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();   // << ����������� ����� Authorization!
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
