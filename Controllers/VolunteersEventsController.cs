@@ -33,8 +33,8 @@ namespace SberVolunteerAPI.Controllers
             return Ok(events);
         }
 
-        [HttpPost("subscribe/{eventId}")]
-        public async Task<IActionResult> SubscribeToEvent(uint eventId)
+        [HttpPost("subscribe")]
+        public async Task<IActionResult> SubscribeToEvent([FromQuery] uint eventId)
         {
             // Достаём userId из JWT
             var userIdString = User.FindFirst("userId")?.Value;

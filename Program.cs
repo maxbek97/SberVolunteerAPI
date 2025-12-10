@@ -30,6 +30,9 @@ builder.Services.AddDbContext<SberVolunteerContext>(options =>
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JWTService>();
+builder.Services.AddScoped<VolunteerService>();
+builder.Services.AddScoped<OrganiserService>();
+
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("AuthSettings"));
 
 builder.Services.AddEndpointsApiExplorer();
@@ -59,7 +62,15 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SberVolunteerContext>();
-    db.Database.Migrate();
+
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Migration error: " + ex.Message);
+    }
 }
 
 if (app.Environment.IsDevelopment())
