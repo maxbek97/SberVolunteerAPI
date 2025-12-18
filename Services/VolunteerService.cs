@@ -56,7 +56,7 @@ namespace SberVolunteerAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<List<EventDTO>> GetMyClosedEventsAsync(uint userId)
+        public async Task<List<ClosedEventDTO>> GetMyClosedEventsAsync(uint userId)
         {
             var now = DateTime.Now;
 
@@ -66,14 +66,21 @@ namespace SberVolunteerAPI.Services
                     (v.VisitStatus == "came" || v.VisitStatus == "absent") &&
                     v.IdEventNavigation.EventState == "closed"
         )
-                .Select(x => new EventDTO
+                .Select(x => new ClosedEventDTO
                 {
                     Id = x.IdEventNavigation.IdEvent,
                     EventTitle = x.IdEventNavigation.EventTitle,
                     EventDescription = x.IdEventNavigation.EventDescription,
                     DatetimeStart = x.IdEventNavigation.DatetimeStart,
                     DatetimeEnd = x.IdEventNavigation.DatetimeEnd,
-                    CreationDate = x.IdEventNavigation.CreationDate
+                    CreationDate = x.IdEventNavigation.CreationDate,
+                    attendance = x.VisitStatus,
+                    duracity = (int) Math.Ceiling(
+                        Math.Abs(
+                            (x.IdEventNavigation.DatetimeEnd - x.IdEventNavigation.DatetimeStart)
+                        .TotalHours
+                        )
+            )
                 })
                 .ToListAsync();
         }
