@@ -60,29 +60,40 @@ namespace SberVolunteerAPI.Services
         {
             var now = DateTime.Now;
 
-            return await _db.EventsToVolunteers
+
+            var data = await _db.EventsToVolunteers
                 .Where(v =>
                     v.IdVolunteer == userId &&
                     (v.VisitStatus == "came" || v.VisitStatus == "absent") &&
                     v.IdEventNavigation.EventState == "closed"
         )
-                .Select(x => new ClosedEventDTO
+                .Select(x => new
                 {
-                    Id = x.IdEventNavigation.IdEvent,
-                    EventTitle = x.IdEventNavigation.EventTitle,
-                    EventDescription = x.IdEventNavigation.EventDescription,
-                    DatetimeStart = x.IdEventNavigation.DatetimeStart,
-                    DatetimeEnd = x.IdEventNavigation.DatetimeEnd,
-                    CreationDate = x.IdEventNavigation.CreationDate,
-                    attendance = x.VisitStatus,
-                    duracity = (int) Math.Ceiling(
-                        Math.Abs(
-                            (x.IdEventNavigation.DatetimeEnd - x.IdEventNavigation.DatetimeStart)
-                        .TotalHours
-                        )
-            )
+                    x.IdEventNavigation.IdEvent,
+                    x.IdEventNavigation.EventTitle,
+                    x.IdEventNavigation.EventDescription,
+                    x.IdEventNavigation.DatetimeStart,
+                    x.IdEventNavigation.DatetimeEnd,
+                    x.IdEventNavigation.CreationDate,
+                    Attendance = x.VisitStatus
                 })
                 .ToListAsync();
+
+            return data
+                .Select(x => new ClosedEventDTO
+                {
+                    Id = x.IdEvent,
+                    EventTitle = x.EventTitle,
+                    EventDescription = x.EventDescription,
+                    DatetimeStart = x.DatetimeStart,
+                    DatetimeEnd = x.DatetimeEnd,
+                    CreationDate = x.CreationDate,
+                    attendance = x.Attendance,
+                    duracity = (int)Math.Ceiling(
+                        Math.Abs((x.DatetimeEnd - x.DatetimeStart).TotalHours)
+                        )
+                })
+                .ToList();
         }
 
         public async Task<(bool Success, string Message)> SubscribeToEventAsync(uint eventId, uint userId)
